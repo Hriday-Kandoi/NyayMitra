@@ -26,16 +26,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-@layer components {
-  .btn-primary {
-    @apply px-4 py-2 bg-[#E07B39] text-white rounded-lg font-semibold hover:bg-[#c9641f] transition-colors;
-  }
+.btn-primary {
+  @apply px-4 py-2 bg-[#E07B39] text-white rounded-lg font-semibold hover:bg-[#c9641f] transition-colors;
+}
 
-  .btn-secondary {
-    @apply px-4 py-2 bg-[#1A2744] text-white rounded-lg font-semibold hover:bg-[#0f1929] transition-colors;
-  }
+.btn-secondary {
+  @apply px-4 py-2 bg-[#1A2744] text-white rounded-lg font-semibold hover:bg-[#0f1929] transition-colors;
+}
 
-  .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow;
-  }
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow;
 }
