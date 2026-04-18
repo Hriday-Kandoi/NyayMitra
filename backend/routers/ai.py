@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
-from backend.services.ai.claude import chat_with_claude
+from backend.services.ai.gemini import chat_with_gemini
 from backend.services.case.ecourts import get_mock_case
 from backend.core.config import config
 
@@ -20,13 +20,13 @@ class ChatRequest(BaseModel):
 @router.post("/chat")
 async def chat(request: ChatRequest):
     """
-    Stream a response from Claude Opus.
+    Stream a response from Gemini.
     Optionally grounded in a specific case context.
     """
-    if not config.ANTHROPIC_API_KEY:
+    if not config.GEMINI_API_KEY:
         raise HTTPException(
             status_code=503,
-            detail="Anthropic API key not configured"
+            detail="Gemini API key not configured"
         )
 
     case = None
@@ -39,7 +39,7 @@ async def chat(request: ChatRequest):
     ]
 
     async def generate():
-        async for chunk in chat_with_claude(
+        async for chunk in chat_with_gemini(
             user_message=request.message,
             case=case,
             conversation_history=history

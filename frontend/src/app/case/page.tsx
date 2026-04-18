@@ -6,6 +6,7 @@ import { CaseResponse } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 export default function CaseSearchPage() {
   const [cnrNumber, setCnrNumber] = useState<string>("");
@@ -20,7 +21,7 @@ export default function CaseSearchPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchCase(cnrNumber);
+      const data: any = await fetchCase(cnrNumber);
       setCaseData(data);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to fetch case";
@@ -98,6 +99,71 @@ export default function CaseSearchPage() {
                   <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">
                     Court Name
                   </h3>
+                  <p className="text-lg text-gray-900">{caseData.court_name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">
+                    Judge
+                  </h3>
+                  <p className="text-lg text-gray-900">{caseData.judge_name || "Not assigned"}</p>
+                </div>
+              </div>
+
+              <div className="border-t pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">
+                      Petitioner
+                    </h3>
+                    <p className="text-gray-900">{caseData.petitioner}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">
+                      Respondent
+                    </h3>
+                    <p className="text-gray-900">{caseData.respondent}</p>
+                  </div>
+                </div>
+              </div>
+
+              {caseData.hearing_history && caseData.hearing_history.length > 0 && (
+                <div className="border-t pt-6">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase mb-4">
+                    Hearing History
+                  </h3>
+                  <div className="space-y-3">
+                    {caseData.hearing_history.map((hearing, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-gray-50 border border-gray-200 rounded p-4"
+                      >
+                        <p className="font-medium text-gray-900">{hearing.purpose}</p>
+                        <p className="text-sm text-gray-600">Date: {hearing.date}</p>
+                        {hearing.next_date && (
+                          <p className="text-sm text-[#E07B39] font-medium">
+                            Next: {hearing.next_date}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+
+            <CardFooter>
+              <Link href={`/chat?cnr=${caseData.cnr_number}`} className="flex-1">
+                <Button variant="secondary" className="w-full">
+                  Ask AI About This Case
+                </Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
                   <p className="text-lg text-gray-900">{caseData.court_name}</p>
                 </div>
                 <div>

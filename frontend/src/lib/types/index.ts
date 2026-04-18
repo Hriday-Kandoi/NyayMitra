@@ -1,7 +1,34 @@
 // Types for NyayMitra - AI Legal Platform
 
 /**
- * Case Information
+ * Backend Case Response (from eCourts API)
+ */
+export interface CaseResponse {
+  cnr_number: string;
+  case_type: string;
+  filing_number: string;
+  filing_date: string;
+  registration_number?: string;
+  registration_date?: string;
+  court_name: string;
+  court_number?: string;
+  judge_name?: string;
+  petitioner: string;
+  respondent: string;
+  status: string;
+  next_hearing_date?: string;
+  hearing_history?: HearingDate[];
+  last_order?: string;
+}
+
+export interface HearingDate {
+  date: string;
+  purpose: string;
+  next_date?: string;
+}
+
+/**
+ * Case Information (Frontend)
  */
 export interface Case {
   id: string;
@@ -43,7 +70,7 @@ export interface ApiResponse<T> {
 
 export interface CaseListResponse extends ApiResponse<Case[]> {}
 
-export interface CaseDetailResponse extends ApiResponse<Case> {}
+export interface CaseDetailResponse extends ApiResponse<Case | CaseResponse> {}
 
 export interface ChatResponse extends ApiResponse<ChatMessage> {}
 
@@ -53,6 +80,7 @@ export interface ChatResponse extends ApiResponse<ChatMessage> {}
 export interface ChatRequest {
   message: string;
   caseId?: string;
+  cnr_number?: string;
   conversationHistory?: ChatMessage[];
 }
 

@@ -1,9 +1,9 @@
-import anthropic
+import google.generativeai as genai
 from backend.core.config import config
 from backend.models.case import CaseResponse
 from typing import Optional, AsyncGenerator
 
-client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
+genai.configure(api_key=config.GEMINI_API_KEY)
 
 SYSTEM_PROMPT = """You are NyayMitra, a knowledgeable Indian legal information assistant. 
 You help ordinary Indian citizens understand their legal situation, rights, and options.
@@ -31,27 +31,28 @@ ACTIVE CASE CONTEXT:
 - Last Order: {case.last_order or 'None'}
 """
 
-async def chat_with_claude(
+async def chat_with_gemini(
     user_message: str,
     case: Optional[CaseResponse] = None,
     conversation_history: list = []
 ) -> AsyncGenerator[str, None]:
     """
-    Stream a response from Claude Opus with optional case context.
+    Stream a response from Gemini with optional case context.
     """
     system = SYSTEM_PROMPT
     if case:
         system += build_case_context(case)
 
-    messages = conversation_history + [
-        {"role": "user", "content": user_message}
-    ]
+    # Gemini model configuration with system prompt
+    model = genai.GenerativeModel('gemini-1.5-pro', system_instruction=system)
 
-    with client.messages.stream(
-        model="claude-opus-4-6",
-        max_tokens=1024,
-        system=system,
-        messages=messages
-    ) as stream:
-        for text in stream.text_stream:
-            yield text
+    history = []
+    for msg in conversation_history:
+        role = "model" if msg["role"] == "assistant" else "user"
+        history.append({"role": role, "parts": [msg["content"]]})
+
+    chat = model.start_chat(history=history)
+
+    response = await chat.send_message_async(user_message, stream=True)
+    async for chunk in response:
+        yield chunk.text

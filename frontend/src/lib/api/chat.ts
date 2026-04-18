@@ -6,7 +6,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
  * Send a chat message and get AI response
  */
 export async function sendChatMessage(request: ChatRequest): Promise<ChatMessage> {
-  const response = await fetch(`${API_BASE}/api/chat`, {
+  const response = await fetch(`${API_BASE}/ai/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
