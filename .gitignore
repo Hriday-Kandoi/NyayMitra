@@ -14,3 +14,7 @@ build/
 out/
 .firebase/
 .swc/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+package-lock.json
+
