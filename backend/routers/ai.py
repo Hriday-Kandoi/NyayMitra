@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
-from services.ai.claude import chat_with_claude
-from services.case.ecourts import get_mock_case
-from core.config import config
+from backend.services.ai.claude import chat_with_claude
+from backend.services.case.ecourts import get_mock_case
+from backend.core.config import config
 
 router = APIRouter(prefix="/ai", tags=["AI"])
 

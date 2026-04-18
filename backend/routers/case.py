@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from models.case import CaseSearchRequest, CaseSearchResponse
-from services.case.ecourts import fetch_case_by_cnr, get_mock_case
-from core.config import config
+from backend.models.case import CaseSearchRequest, CaseSearchResponse
+from backend.services.case.ecourts import fetch_case_by_cnr, get_mock_case
+from backend.core.config import config
 
 router = APIRouter(prefix="/case", tags=["Case"])
 

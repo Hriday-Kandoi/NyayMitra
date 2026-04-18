@@ -1,7 +1,7 @@
 import httpx
 from typing import Optional
-from models.case import CaseResponse, HearingDate
-from core.config import config
+from backend.models.case import CaseResponse, HearingDate
+from backend.core.config import config
 
 ECOURTS_BASE_URL = "https://services.ecourts.gov.in/ecourtindia_v6"
 

@@ -1,6 +1,6 @@
 import anthropic
-from core.config import config
-from models.case import CaseResponse
+from backend.core.config import config
+from backend.models.case import CaseResponse
 from typing import Optional, AsyncGenerator
 
 client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
