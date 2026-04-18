@@ -1,11 +1,11 @@
-import { Case, CaseListResponse, CaseDetailResponse, ApiResponse } from "@/lib/types";
+import { Case, CaseResponse, CaseListResponse, CaseDetailResponse } from "@/lib/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 /**
  * Fetch case by CNR number from eCourts
  */
-export async function fetchCase(cnrNumber: string): Promise<Case> {
+export async function fetchCase(cnrNumber: string): Promise<CaseResponse> {
   const response = await fetch(`${API_BASE}/case/${encodeURIComponent(cnrNumber)}`, {
     method: "GET",
     headers: {
@@ -22,7 +22,7 @@ export async function fetchCase(cnrNumber: string): Promise<Case> {
     throw new Error("No case data returned");
   }
 
-  return data.data;
+  return data.data as CaseResponse;
 }
 
 /**
@@ -64,7 +64,7 @@ export async function getCaseById(caseId: string): Promise<Case> {
     throw new Error("No case data returned");
   }
 
-  return data.data;
+  return data.data as Case;
 }
 
 /**
@@ -88,7 +88,7 @@ export async function createCase(caseData: Omit<Case, "id" | "lastUpdated">): Pr
     throw new Error("No case data returned");
   }
 
-  return data.data;
+  return data.data as Case;
 }
 
 /**
@@ -112,7 +112,7 @@ export async function updateCase(caseId: string, updates: Partial<Case>): Promis
     throw new Error("No case data returned");
   }
 
-  return data.data;
+  return data.data as Case;
 }
 
 /**
