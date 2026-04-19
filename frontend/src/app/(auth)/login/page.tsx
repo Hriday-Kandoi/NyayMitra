@@ -13,7 +13,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { AlertCircle, Loader, Mail, Lock } from "lucide-react";
+import { AlertCircle, Loader } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();

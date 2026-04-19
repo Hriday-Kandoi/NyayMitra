@@ -15,7 +15,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { AlertCircle, Loader, Mail, Lock, User } from "lucide-react";
+import { AlertCircle, Loader, User } from "lucide-react";
 
 type UserRole = "CLIENT" | "LAWYER";
 

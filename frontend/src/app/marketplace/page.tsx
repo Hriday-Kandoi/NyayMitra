@@ -5,13 +5,10 @@ import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { LawyerCard } from "@/components/marketplace/LawyerCard";
 import { BookingModal } from "@/components/marketplace/BookingModal";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import {
   Search,
   Filter,
-  Star,
-  MapPin,
   Briefcase,
   Loader,
   AlertCircle,

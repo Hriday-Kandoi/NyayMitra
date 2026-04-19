@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { User, signOut as firebaseSignOut } from "firebase/auth";
+import { signOut as firebaseSignOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 

@@ -1,4 +1,4 @@
-import { useAuth } from "@/lib/hooks/useAuth";
+
 
 interface LawyerListResponse {
   success: boolean;

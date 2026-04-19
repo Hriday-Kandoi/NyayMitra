@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { AlertCircle, Loader, X, Calendar, Clock } from "lucide-react";
+import { AlertCircle, X, Calendar, Clock } from "lucide-react";
 
 interface BookingModalProps {
   lawyer: {
