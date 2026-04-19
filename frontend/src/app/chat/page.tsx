@@ -3,6 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { ChatWindow } from "@/components/ai/ChatWindow";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -119,8 +120,10 @@ function ChatLoadingSkeleton() {
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<ChatLoadingSkeleton />}>
-      <ChatPageContent />
-    </Suspense>
+    <ProtectedRoute>
+      <Suspense fallback={<ChatLoadingSkeleton />}>
+        <ChatPageContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

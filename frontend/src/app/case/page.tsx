@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { fetchCase } from "@/lib/api/case";
 import { CaseResponse } from "@/lib/types";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ArrowRight, AlertCircle, Calendar, Users, FileText } from "lucide-react";
 
-export default function CaseSearchPage() {
+function CaseSearchPageContent() {
   const [cnrNumber, setCnrNumber] = useState<string>("");
   const [caseData, setCaseData] = useState<CaseResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -238,5 +239,13 @@ export default function CaseSearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CaseSearchPage() {
+  return (
+    <ProtectedRoute>
+      <CaseSearchPageContent />
+    </ProtectedRoute>
   );
 }

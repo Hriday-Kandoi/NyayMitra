@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import {
@@ -13,7 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   // Mock user data
   const userName = "Rajesh Kumar";
   const totalCases = 3;
@@ -254,5 +255,13 @@ export default function DashboardPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardPageContent />
+    </ProtectedRoute>
   );
 }
