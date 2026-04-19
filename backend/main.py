@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from backend.routers import case, ai, auth
+from backend.routers import case, ai, auth, marketplace
 
 load_dotenv()
 
@@ -23,6 +23,7 @@ app.add_middleware(
 app.include_router(case.router)
 app.include_router(ai.router)
 app.include_router(auth.router)
+app.include_router(marketplace.router)
 
 @app.get("/health")
 def health_check():
