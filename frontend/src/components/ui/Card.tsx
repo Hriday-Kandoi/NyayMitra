@@ -16,7 +16,7 @@ export function Card({
   return (
     <div
       className={`bg-white rounded-2xl border border-[#D4D8E4] shadow-sm ${
-        hoverable ? "transition-all duration-200 hover:shadow-lg hover:border-[#E07B39]/20" : ""
+        hoverable ? "transition-all duration-200 hover:shadow-lg hover:border-[#E07B39]/30" : ""
       } ${className}`}
       {...props}
     >
@@ -47,7 +47,7 @@ export function CardContent({
   ...props
 }: CardContentProps) {
   return (
-    <div className={`px-6 py-4 ${className}`} {...props}>
+    <div className={`px-6 py-6 ${className}`} {...props}>
       {children}
     </div>
   );

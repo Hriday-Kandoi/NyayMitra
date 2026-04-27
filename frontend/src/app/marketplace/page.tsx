@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { ProtectedRoute } from "@/components/layout/ProtectedRoute";
 import { LawyerCard } from "@/components/marketplace/LawyerCard";
-import { BookingModal } from "@/components/marketplace/BookingModal";
-import { Card, CardContent } from "@/components/ui/Card";
+import { LawyerPortfolio } from "@/components/marketplace/LawyerPortfolio";
+import { LawyerAvailability } from "@/components/marketplace/LawyerAvailability";
 import { Button } from "@/components/ui/Button";
+import { fetchLawyers } from "@/lib/api/marketplace";
+import { MOCK_LAWYERS } from "@/lib/data/mockLawyers";
 import {
   Search,
-  Filter,
-  Briefcase,
   Loader,
   AlertCircle,
 } from "lucide-react";
@@ -27,6 +27,12 @@ interface Lawyer {
   bio: string;
   profileImage?: string;
   verified: boolean;
+  successRate?: number;
+  totalCases?: number;
+  wonCases?: number;
+  settledCases?: number;
+  pastCases?: any[];
+  certifications?: any[];
 }
 
 function MarketplaceContent() {
@@ -35,36 +41,33 @@ function MarketplaceContent() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLawyer, setSelectedLawyer] = useState<Lawyer | null>(null);
-  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [specialization, setSpecialization] = useState("");
   const [minRating, setMinRating] = useState(0);
 
-  // Fetch lawyers on mount
   useEffect(() => {
-    fetchLawyers();
+    loadLawyers();
   }, []);
 
-  const fetchLawyers = async () => {
+  const loadLawyers = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch("/api/marketplace/lawyers");
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch lawyers");
-      }
-
-      const data = await response.json();
-      setLawyers(data.data || []);
+      const data = await fetchLawyers();
+      const lawyersWithDetails = data.map((lawyer: any) => {
+        const mockData = MOCK_LAWYERS.find((m) => m.id === lawyer.id);
+        return mockData ? { ...lawyer, ...mockData } : lawyer;
+      });
+      setLawyers(lawyersWithDetails.length > 0 ? lawyersWithDetails : MOCK_LAWYERS);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load lawyers";
       setError(message);
+      setLawyers(MOCK_LAWYERS);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Filter lawyers based on search and filters
   const filteredLawyers = lawyers.filter((lawyer) => {
     const matchesSearch =
       lawyer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,165 +81,154 @@ function MarketplaceContent() {
     return matchesSearch && matchesSpecialization && matchesRating;
   });
 
-  const handleBooking = (lawyer: Lawyer) => {
+  const handleSelectLawyer = (lawyer: Lawyer) => {
     setSelectedLawyer(lawyer);
-    setShowBookingModal(true);
+    setViewMode("detail");
   };
 
-  const handleBookingSuccess = () => {
-    setShowBookingModal(false);
-    setSelectedLawyer(null);
-    // Show success message (optional toast)
-  };
+  const specializations = Array.from(
+    new Set(lawyers.map((l) => l.specialization))
+  );
 
-  return (
-    <div className="min-h-screen bg-[#EEF1F8] pt-24 pb-16 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Page Header */}
-        <div className="text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#1A2744] mb-3">
-            Find Your Lawyer
-          </h1>
-          <p className="text-lg text-[#6B7A9A]">
-            Browse verified lawyers and book consultations instantly
-          </p>
-        </div>
+  if (viewMode === "list") {
+    return (
+      <div className="min-h-screen bg-[#EEF1F8] pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-[#1A2744] mb-3">
+              Find Your Lawyer
+            </h1>
+            <p className="text-lg text-[#6B7A9A]">
+              Connect with verified legal professionals for your case
+            </p>
+          </div>
 
-        {/* Search and Filters */}
-        <Card hoverable>
-          <CardContent className="pt-6 space-y-6">
-            {/* Search Bar */}
+          <div className="space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 text-[#6B7A9A]" size={20} />
+              <Search
+                size={20}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7A9A]"
+              />
               <input
                 type="text"
                 placeholder="Search by name, specialization, or location..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-[#D4D8E4] rounded-xl focus:outline-none focus:border-[#E07B39] transition-colors"
+                className="w-full pl-12 pr-4 py-3 border-2 border-[#D4D8E4] rounded-xl text-[#1A2744] placeholder-[#6B7A9A] focus:outline-none focus:border-[#E07B39]"
               />
             </div>
 
-            {/* Filters Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#1A2744]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#1A2744] mb-2">
                   Specialization
                 </label>
                 <select
                   value={specialization}
                   onChange={(e) => setSpecialization(e.target.value)}
-                  className="w-full px-4 py-2 border-2 border-[#D4D8E4] rounded-xl focus:outline-none focus:border-[#E07B39] transition-colors text-[#1A2744]"
+                  className="w-full px-4 py-2 border-2 border-[#D4D8E4] rounded-xl text-[#1A2744] focus:outline-none focus:border-[#E07B39]"
                 >
                   <option value="">All Specializations</option>
-                  <option value="Criminal Law">Criminal Law</option>
-                  <option value="Family Law">Family Law</option>
-                  <option value="Corporate Law">Corporate Law</option>
-                  <option value="Property Law">Property Law</option>
-                  <option value="Labor Law">Labor Law</option>
-                  <option value="Tax Law">Tax Law</option>
+                  {specializations.map((spec) => (
+                    <option key={spec} value={spec}>
+                      {spec}
+                    </option>
+                  ))}
                 </select>
               </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#1A2744]">
+              <div>
+                <label className="block text-sm font-medium text-[#1A2744] mb-2">
                   Minimum Rating
                 </label>
                 <select
                   value={minRating}
-                  onChange={(e) => setMinRating(Number(e.target.value))}
-                  className="w-full px-4 py-2 border-2 border-[#D4D8E4] rounded-xl focus:outline-none focus:border-[#E07B39] transition-colors text-[#1A2744]"
+                  onChange={(e) => setMinRating(parseFloat(e.target.value))}
+                  className="w-full px-4 py-2 border-2 border-[#D4D8E4] rounded-xl text-[#1A2744] focus:outline-none focus:border-[#E07B39]"
                 >
-                  <option value={0}>All Ratings</option>
-                  <option value={3}>3+ Stars</option>
-                  <option value={4}>4+ Stars</option>
-                  <option value={4.5}>4.5+ Stars</option>
+                  <option value="0">All Ratings</option>
+                  <option value="4">4+ Stars</option>
+                  <option value="4.5">4.5+ Stars</option>
+                  <option value="4.7">4.7+ Stars</option>
                 </select>
               </div>
+            </div>
+          </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-[#1A2744]">
-                  &nbsp;
-                </label>
-                <Button
-                  onClick={fetchLawyers}
-                  variant="outline"
-                  fullWidth
-                  className="gap-2"
-                >
-                  <Filter size={18} />
-                  Reset Filters
-                </Button>
+          {error && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg p-4 flex gap-3">
+              <AlertCircle size={20} className="text-yellow-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-yellow-800">
+                  Using sample lawyers data
+                </p>
+                <p className="text-sm text-yellow-700">{error}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4 flex gap-3">
-            <AlertCircle
-              size={20}
-              className="text-red-500 flex-shrink-0 mt-0.5"
-            />
-            <div>
-              <h3 className="font-semibold text-red-900">Failed to Load Lawyers</h3>
-              <p className="text-red-700 text-sm mt-1">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <Loader className="w-8 h-8 text-[#E07B39] animate-spin mx-auto mb-4" />
-              <p className="text-[#6B7A9A]">Loading lawyers...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Lawyers Grid */}
-        {!isLoading && !error && (
-          <>
-            {filteredLawyers.length > 0 ? (
+          {!isLoading && !error && filteredLawyers.length > 0 && (
+            <>
+              <p className="text-sm text-[#6B7A9A]">
+                Found {filteredLawyers.length} lawyer(s)
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredLawyers.map((lawyer) => (
-                  <LawyerCard
-                    key={lawyer.id}
-                    lawyer={lawyer}
-                    onBook={() => handleBooking(lawyer)}
-                  />
+                  <div key={lawyer.id} onClick={() => handleSelectLawyer(lawyer)}>
+                    <LawyerCard
+                      lawyer={lawyer}
+                      onBook={() => handleSelectLawyer(lawyer)}
+                    />
+                  </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-12">
-                <Briefcase
-                  size={48}
-                  className="text-[#D4D8E4] mx-auto mb-4"
-                />
-                <h3 className="text-xl font-semibold text-[#1A2744] mb-2">
-                  No lawyers found
-                </h3>
-                <p className="text-[#6B7A9A]">
-                  Try adjusting your search or filters
-                </p>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+            </>
+          )}
 
-      {/* Booking Modal */}
-      {showBookingModal && selectedLawyer && (
-        <BookingModal
-          lawyer={selectedLawyer}
-          onClose={() => setShowBookingModal(false)}
-          onSuccess={handleBookingSuccess}
-        />
-      )}
-    </div>
-  );
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader className="w-8 h-8 text-[#E07B39] animate-spin" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (viewMode === "detail" && selectedLawyer) {
+    return (
+      <div className="min-h-screen bg-[#EEF1F8] pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setViewMode("list")}
+            className="mb-4"
+          >
+            ← Back to Lawyers
+          </Button>
+
+          <LawyerPortfolio 
+            lawyer={{
+              id: selectedLawyer.id,
+              name: selectedLawyer.name,
+              specialization: selectedLawyer.specialization,
+              experience: selectedLawyer.experience,
+              successRate: selectedLawyer.successRate ?? 0,
+              totalCases: selectedLawyer.totalCases ?? 0,
+              wonCases: selectedLawyer.wonCases ?? 0,
+              settledCases: selectedLawyer.settledCases ?? 0,
+            }} 
+          />
+          <LawyerAvailability
+            lawyerId={selectedLawyer.id}
+            onSelectSlot={(date, time) => console.log("Slot selected:", date, time)}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default function MarketplacePage() {

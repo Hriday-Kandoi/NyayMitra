@@ -1,4 +1,4 @@
-
+import { MOCK_LAWYERS } from "@/lib/data/mockLawyers";
 
 interface LawyerListResponse {
   success: boolean;
@@ -39,6 +39,12 @@ interface Lawyer {
   bio: string;
   profileImage?: string;
   verified: boolean;
+  successRate?: number;
+  totalCases?: number;
+  wonCases?: number;
+  settledCases?: number;
+  pastCases?: any[];
+  certifications?: any[];
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -66,8 +72,21 @@ export async function fetchLawyers(
     const data: LawyerListResponse = await response.json();
     return data.data || [];
   } catch (error) {
-    console.error("Error fetching lawyers:", error);
-    throw error;
+    // Fallback to mock data in development
+    console.log("Using mock lawyers data...");
+    let filtered = [...MOCK_LAWYERS];
+    
+    if (specialization) {
+      filtered = filtered.filter(
+        (l) => l.specialization.toLowerCase() === specialization.toLowerCase()
+      );
+    }
+    
+    if (minRating) {
+      filtered = filtered.filter((l) => l.rating >= minRating);
+    }
+    
+    return filtered;
   }
 }
 

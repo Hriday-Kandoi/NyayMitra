@@ -7,15 +7,32 @@ import firebase_admin
 from firebase_admin import credentials, auth, firestore
 
 # Initialize Firebase Admin SDK if not already done
+FIREBASE_ENABLED = False
 if not firebase_admin._apps:
     try:
-        cred = credentials.Certificate(config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH)
-        firebase_admin.initialize_app(cred)
+        # Try to initialize if we have valid credentials
+        if hasattr(config, 'FIREBASE_SERVICE_ACCOUNT_KEY_PATH') and config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH:
+            cred = credentials.Certificate(config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH)
+            firebase_admin.initialize_app(cred)
+            FIREBASE_ENABLED = True
+            print("✓ Firebase Admin SDK initialized successfully")
+        else:
+            print("⚠ Firebase service account key not configured - using mock mode for auth")
     except Exception as e:
-        print(f"Warning: Could not initialize Firebase Admin SDK: {e}")
+        print(f"⚠ Firebase initialization skipped: {str(e)}")
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
-db = firestore.client()
+
+# Safe Firestore client getter
+def get_db():
+    if not FIREBASE_ENABLED:
+        return None
+    try:
+        return firestore.client()
+    except Exception:
+        return None
+
+db = get_db()
 
 
 class VerifyTokenRequest(BaseModel):

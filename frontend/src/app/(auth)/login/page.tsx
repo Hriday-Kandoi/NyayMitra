@@ -8,12 +8,30 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, FIREBASE_ENABLED } from "@/lib/firebase";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { AlertCircle, Loader } from "lucide-react";
+import { AlertCircle, Loader, Info } from "lucide-react";
+
+// Demo credentials for testing
+const DEMO_USERS = {
+  client: {
+    email: "demo@client.com",
+    password: "demo123",
+    uid: "demo-client-001",
+    displayName: "Demo Client",
+    role: "CLIENT" as const,
+  },
+  lawyer: {
+    email: "demo@lawyer.com",
+    password: "demo123",
+    uid: "demo-lawyer-001",
+    displayName: "Demo Lawyer",
+    role: "LAWYER" as const,
+  },
+};
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,6 +48,34 @@ export default function LoginPage() {
     }
   }, [user, authLoading, router]);
 
+  const handleDemoLogin = async (demoUser: (typeof DEMO_USERS)[keyof typeof DEMO_USERS]) => {
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      // Store mock user in localStorage
+      const mockUser = {
+        uid: demoUser.uid,
+        email: demoUser.email,
+        displayName: demoUser.displayName,
+        photoURL: null,
+      };
+
+      localStorage.setItem("nyaymitra_mock_user", JSON.stringify(mockUser));
+      localStorage.setItem("nyaymitra_demo_role", demoUser.role);
+
+      // Wait a moment for the useAuth hook to pick up the change
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 500);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to login";
+      setError(errorMessage);
+      setIsLoading(false);
+    }
+  };
+
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -38,6 +84,31 @@ export default function LoginPage() {
     try {
       if (!email || !password) {
         setError("Please enter both email and password");
+        setIsLoading(false);
+        return;
+      }
+
+      // Check if this is a demo user
+      const demoUser = Object.values(DEMO_USERS).find(
+        (u) => u.email === email && u.password === password
+      );
+
+      if (demoUser) {
+        await handleDemoLogin(demoUser);
+        return;
+      }
+
+      // Try real Firebase login if enabled
+      if (!FIREBASE_ENABLED) {
+        setError(
+          `Invalid credentials. Demo accounts: ${DEMO_USERS.client.email} or ${DEMO_USERS.lawyer.email}`
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      if (!auth) {
+        setError("Authentication not available");
         setIsLoading(false);
         return;
       }
@@ -53,6 +124,11 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
+    if (!FIREBASE_ENABLED || !auth) {
+      setError("Google login not available in demo mode. Use demo credentials.");
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 
@@ -92,6 +168,19 @@ export default function LoginPage() {
           </Link>
           <p className="text-[#6B7A9A] mt-2">Sign in to your account</p>
         </div>
+
+        {/* Demo Info Banner */}
+        {!FIREBASE_ENABLED && (
+          <div className="mb-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 flex gap-3">
+            <Info size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-blue-700 text-sm font-medium">Demo Mode Active</p>
+              <p className="text-blue-600 text-xs mt-1">
+                Use the demo buttons below or login with demo credentials
+              </p>
+            </div>
+          </div>
+        )}
 
         <Card hoverable>
           <CardHeader className="bg-[#1A2744]">
@@ -160,8 +249,9 @@ export default function LoginPage() {
               fullWidth
               size="lg"
               onClick={handleGoogleLogin}
-              disabled={isLoading}
+              disabled={isLoading || !FIREBASE_ENABLED}
               className="gap-2"
+              title={!FIREBASE_ENABLED ? "Not available in demo mode" : ""}
             >
               {isLoading ? (
                 <Loader size={18} className="animate-spin" />
@@ -176,6 +266,50 @@ export default function LoginPage() {
               )}
               Sign in with Google
             </Button>
+
+            {/* Demo Login Buttons */}
+            {!FIREBASE_ENABLED && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#D4D8E4]" />
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-[#6B7A9A]">Demo Accounts</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    fullWidth
+                    size="md"
+                    onClick={() => handleDemoLogin(DEMO_USERS.client)}
+                    disabled={isLoading}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="text-xs font-medium">Client</div>
+                      <div className="text-xs opacity-75">{DEMO_USERS.client.email}</div>
+                    </div>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    fullWidth
+                    size="md"
+                    onClick={() => handleDemoLogin(DEMO_USERS.lawyer)}
+                    disabled={isLoading}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div className="text-xs font-medium">Lawyer</div>
+                      <div className="text-xs opacity-75">{DEMO_USERS.lawyer.email}</div>
+                    </div>
+                  </Button>
+                </div>
+              </>
+            )}
 
             {/* Sign Up Link */}
             <div className="text-center pt-4 border-t border-[#D4D8E4]">

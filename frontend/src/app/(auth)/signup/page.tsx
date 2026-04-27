@@ -9,7 +9,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
 } from "firebase/auth";
-import { auth, db } from "@/lib/firebase";
+import { auth, db, FIREBASE_ENABLED } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
@@ -68,6 +68,12 @@ export default function SignupPage() {
   };
 
   const createUserInFirestore = async (uid: string) => {
+    // Skip if Firebase not available (demo mode)
+    if (!db || !FIREBASE_ENABLED) {
+      console.log("Firestore not available, skipping user document creation (demo mode)");
+      return;
+    }
+
     try {
       const userDocRef = doc(db, "users", uid);
       await setDoc(userDocRef, {
@@ -86,6 +92,13 @@ export default function SignupPage() {
     setError(null);
 
     if (!validateForm()) {
+      return;
+    }
+
+    // Check if Firebase is available
+    if (!auth || !FIREBASE_ENABLED) {
+      setError("Firebase not configured. Please check your environment settings.");
+      setIsLoading(false);
       return;
     }
 
@@ -121,6 +134,13 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setError(null);
     setIsLoading(true);
+
+    // Check if Firebase is available
+    if (!auth || !FIREBASE_ENABLED) {
+      setError("Firebase not configured. Please check your environment settings.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const provider = new GoogleAuthProvider();

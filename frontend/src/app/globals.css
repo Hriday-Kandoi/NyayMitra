@@ -16,5 +16,51 @@ body {
   font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  @apply text-[#1A2744] bg-white;
+}
+
+/* Typography System */
+@layer base {
+  h1 {
+    @apply text-[2.5rem] font-bold leading-tight tracking-tight text-[#1A2744];
+  }
+
+  h2 {
+    @apply text-[2rem] font-bold leading-snug text-[#1A2744];
+  }
+
+  h3 {
+    @apply text-[1.5rem] font-semibold leading-snug text-[#1A2744];
+  }
+
+  h4 {
+    @apply text-[1.25rem] font-semibold leading-relaxed text-[#1A2744];
+  }
+
+  p {
+    @apply text-base leading-relaxed text-[#1A2744];
+  }
+
+  small,
+  label {
+    @apply text-sm font-medium text-[#6B7A9A];
+  }
+
+  /* Utility Classes */
+  .number {
+    @apply font-mono font-semibold text-[#1A2744];
+  }
+
+  .currency {
+    @apply font-mono font-bold text-[#E07B39];
+  }
+
+  .text-muted {
+    @apply text-[#6B7A9A];
+  }
+
+  .text-secondary {
+    @apply text-sm text-[#6B7A9A];
+  }
 }
 

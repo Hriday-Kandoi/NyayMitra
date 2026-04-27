@@ -18,19 +18,19 @@ export function Input({
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-[#1A2744] mb-2">
+        <label className="block text-sm font-semibold text-[#1A2744] mb-2">
           {label}
         </label>
       )}
       <input
-        className={`w-full px-4 py-2 border-2 border-gray-300 rounded-md text-base text-gray-900 placeholder-gray-500 transition-colors duration-200 focus:outline-none focus:border-[#1A2744] focus:ring-1 focus:ring-[#1A2744] disabled:bg-gray-100 disabled:cursor-not-allowed ${
-          error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""
+        className={`w-full px-4 py-2.5 border-2 border-[#D4D8E4] rounded-xl text-base text-[#1A2744] placeholder-[#6B7A9A] transition-colors duration-200 focus:outline-none focus:border-[#1A2744] focus:ring-2 focus:ring-[#1A2744]/10 disabled:bg-[#EEF1F8] disabled:cursor-not-allowed h-10 min-h-10 ${
+          error ? "border-red-500 focus:border-red-500 focus:ring-red-500/10" : ""
         } ${className}`}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-2 text-sm font-medium text-red-600">{error}</p>}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+        <p className="mt-2 text-sm text-[#6B7A9A]">{helperText}</p>
       )}
     </div>
   );

@@ -6,18 +6,34 @@ import firebase_admin
 from firebase_admin import auth, firestore
 
 # Initialize Firebase Admin SDK if not already done
+FIREBASE_ENABLED = False
 if not firebase_admin._apps:
     try:
         from firebase_admin import credentials
         from backend.core.config import config
 
-        cred = credentials.Certificate(config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH)
-        firebase_admin.initialize_app(cred)
+        if hasattr(config, 'FIREBASE_SERVICE_ACCOUNT_KEY_PATH') and config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH:
+            cred = credentials.Certificate(config.FIREBASE_SERVICE_ACCOUNT_KEY_PATH)
+            firebase_admin.initialize_app(cred)
+            FIREBASE_ENABLED = True
+            print("✓ Firebase Admin SDK initialized successfully")
+        else:
+            print("⚠ Firebase service account key not configured - using mock mode")
     except Exception as e:
-        print(f"Warning: Could not initialize Firebase Admin SDK: {e}")
+        print(f"⚠ Firebase initialization skipped: {str(e)}")
 
 router = APIRouter(prefix="/marketplace", tags=["Marketplace"])
-db = firestore.client()
+
+# Safe Firestore client getter
+def get_db():
+    if not FIREBASE_ENABLED:
+        return None
+    try:
+        return firestore.client()
+    except Exception:
+        return None
+
+db = get_db()
 
 
 @router.get("/lawyers", response_model=dict)
@@ -28,31 +44,137 @@ async def get_lawyers(
 ):
     """
     Get list of lawyers with optional filtering.
+    Returns mock data if Firebase is not configured.
     """
+    # Mock lawyers data for development
+    MOCK_LAWYERS = [
+        {
+            "id": "1",
+            "name": "Rajesh Kumar",
+            "specialization": "Criminal Law",
+            "experience": 12,
+            "rating": 4.8,
+            "reviewCount": 87,
+            "location": "Mumbai, Maharashtra",
+            "hourlyRate": 2500,
+            "availability": "Mon-Fri, 10AM-6PM",
+            "bio": "Expert in criminal defense with 12+ years of experience.",
+            "verified": True,
+            "available": True,
+        },
+        {
+            "id": "2",
+            "name": "Priya Desai",
+            "specialization": "Family Law",
+            "experience": 8,
+            "rating": 4.6,
+            "reviewCount": 56,
+            "location": "Bangalore, Karnataka",
+            "hourlyRate": 2000,
+            "availability": "Tue-Sat, 11AM-5PM",
+            "bio": "Specializing in divorce and matrimonial disputes.",
+            "verified": True,
+            "available": True,
+        },
+        {
+            "id": "3",
+            "name": "Vikram Singh",
+            "specialization": "Corporate & Tax Law",
+            "experience": 15,
+            "rating": 4.9,
+            "reviewCount": 102,
+            "location": "Delhi, India",
+            "hourlyRate": 3500,
+            "availability": "Mon-Fri, 9AM-7PM",
+            "bio": "Senior corporate lawyer with Fortune 500 experience.",
+            "verified": True,
+            "available": True,
+        },
+        {
+            "id": "4",
+            "name": "Anjali Menon",
+            "specialization": "Intellectual Property",
+            "experience": 10,
+            "rating": 4.7,
+            "reviewCount": 68,
+            "location": "Hyderabad, Telangana",
+            "hourlyRate": 2800,
+            "availability": "Mon-Thu, 10AM-8PM",
+            "bio": "Patent and trademark specialist.",
+            "verified": True,
+            "available": True,
+        },
+        {
+            "id": "5",
+            "name": "Sanjay Patel",
+            "specialization": "Labour & Employment",
+            "experience": 9,
+            "rating": 4.5,
+            "reviewCount": 43,
+            "location": "Ahmedabad, Gujarat",
+            "hourlyRate": 1800,
+            "availability": "Mon-Sat, 9AM-6PM",
+            "bio": "Expert in employee rights and industrial disputes.",
+            "verified": True,
+            "available": True,
+        },
+        {
+            "id": "6",
+            "name": "Neha Gupta",
+            "specialization": "Real Estate & Property",
+            "experience": 11,
+            "rating": 4.8,
+            "reviewCount": 79,
+            "location": "Pune, Maharashtra",
+            "hourlyRate": 2300,
+            "availability": "Tue-Sat, 10AM-6PM",
+            "bio": "Real estate law and NRI property specialist.",
+            "verified": True,
+            "available": True,
+        },
+    ]
+    
     try:
-        query = db.collection("lawyers")
+        # If Firebase is not available, use mock data
+        if not db:
+            lawyers = MOCK_LAWYERS
+        else:
+            query = db.collection("lawyers")
 
-        # Apply filters
-        if available_only:
-            query = query.where("available", "==", True)
+            # Apply filters
+            if available_only:
+                query = query.where("available", "==", True)
 
+            if specialization:
+                query = query.where("specialization", "==", specialization)
+
+            docs = query.stream()
+
+            lawyers = []
+            for doc in docs:
+                lawyer_data = doc.to_dict()
+                lawyer_data["id"] = doc.id
+
+                # Filter by rating if specified
+                if min_rating and lawyer_data.get("rating", 0) < min_rating:
+                    continue
+
+                lawyers.append(lawyer_data)
+
+            # Sort by rating (highest first)
+            lawyers.sort(key=lambda x: x.get("rating", 0), reverse=True)
+
+        # Apply client-side filtering if needed
         if specialization:
-            query = query.where("specialization", "==", specialization)
-
-        docs = query.stream()
-
-        lawyers = []
-        for doc in docs:
-            lawyer_data = doc.to_dict()
-            lawyer_data["id"] = doc.id
-
-            # Filter by rating if specified
-            if min_rating and lawyer_data.get("rating", 0) < min_rating:
-                continue
-
-            lawyers.append(lawyer_data)
-
-        # Sort by rating (highest first)
+            lawyers = [l for l in lawyers if l.get("specialization") == specialization]
+        
+        if min_rating:
+            lawyers = [l for l in lawyers if l.get("rating", 0) >= min_rating]
+        
+        if available_only:
+            lawyers = [l for l in lawyers if l.get("available", True)]
+        
+        # Sort by rating
         lawyers.sort(key=lambda x: x.get("rating", 0), reverse=True)
 
         return {
