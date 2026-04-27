@@ -20,9 +20,17 @@ app.add_middleware(
 )
 
 # Routers
+# eCourts & Case lookup
 app.include_router(case.router)
+# User case management (CRUD)
+app.include_router(case.api_router)
+# AI chat (existing)
 app.include_router(ai.router)
+# AI chat history, streaming, analysis (new)
+app.include_router(ai.api_router)
+# Authentication
 app.include_router(auth.router)
+# Marketplace
 app.include_router(marketplace.router)
 
 @app.get("/health")
